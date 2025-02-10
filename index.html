@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Bouncing DVD Logo</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #1a1a1a;
+        }
+
+        .dvd-container {
+            position: relative;
+            width: 200px;
+            height: 200px;
+        }
+
+        .dvd {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background-color: #fff;
+            box-shadow: 
+                inset 20px 20px rgba(0,0,0,0.3),
+                inset -20px -20px rgba(0,0,0,0.3);
+        }
+
+        .dvd::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #fff;
+        }
+
+        .dvd::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: #fff;
+        }
+
+        @keyframes dvd-bounce {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(140px, 140px); }
+        }
+    </style>
+</head>
+<body>
+    <div class="dvd-container">
+        <div class="dvd" id="logo"></div>
+    </div>
+
+    <script>
+        const dvdLogo = document.getElementById('logo');
+        
+        let positionX = 50;
+        let positionY = 50;
+        let directionX = 1;
+        let directionY = 1;
+
+        function animate() {
+            // Bounce between corners
+            if (positionX <= 0 || positionX >= 200) {
+                directionX *= -1;
+            }
+            if (positionY <= 0 || positionY >= 200) {
+                directionY *= -1;
+            }
+
+            positionX += 3 * directionX;
+            positionY += 3 * directionY;
+
+            dvdLogo.style.transform = `translate(${positionX}%, ${positionY}%)`;
+
+            // Add some visual effects
+            const hue = Math.hueRotate(Date.now(), 0, 360);
+            dvdLogo.style.boxShadow = 
+                `inset 20px 20px rgba(0,0,0,0.3)`,
+                `inset -${hue}px -${hue}px rgba(${hue}, ${hue}, ${hue}, 0.3)`;
+
+            requestAnimationFrame(animate);
+        }
+
+        // Start animation
+        animate();
+
+        // Add some random color changes
+        setInterval(() => {
+            const hue = Math.hueRotate(Date.now(), 0, 360);
+            dvdLogo.style.backgroundColor = `hsl(${hue}, 100%, 50%)`;
+        }, 2000);
+
+        // Adjust animation speed (optional)
+        let speedMultiplier = 1;
+        setInterval(() => {
+            if (speedMultiplier > 0.5 && speedMultiplier < 3) {
+                speedMultiplier += Math.random() * 0.1 - 0.05;
+            }
+        }, 200);
+    </script>
+</body>
+</html>
