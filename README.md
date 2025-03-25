@@ -1,3 +1,3 @@
 # DVD-Logo
 
-A Simple DVD Logo that goes from corner to corner, still WIP.
+A Simple DVD Logo that mimics the retro DVD screensavr, still WIP.
