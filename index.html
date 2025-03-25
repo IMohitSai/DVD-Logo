@@ -1,121 +1,102 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Bouncing DVD Logo</title>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            background-color: #1a1a1a;
-        }
-
-        .dvd-container {
-            position: relative;
-            width: 200px;
-            height: 200px;
-        }
-
-        .dvd {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 70px;
-            height: 70px;
-            border-radius: 50%;
-            background-color: #fff;
-            box-shadow: 
-                inset 20px 20px rgba(0,0,0,0.3),
-                inset -20px -20px rgba(0,0,0,0.3);
-        }
-
-        .dvd::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background-color: #fff;
-        }
-
-        .dvd::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background-color: #fff;
-        }
-
-        @keyframes dvd-bounce {
-            0% { transform: translate(0, 0); }
-            100% { transform: translate(140px, 140px); }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>Retro DVD Screensaver</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: #000;
+    }
+    canvas {
+      display: block;
+      filter: contrast(1.2) brightness(0.9) saturate(1.5) grayscale(0.1);
+    }
+  </style>
 </head>
 <body>
-    <div class="dvd-container">
-        <div class="dvd" id="logo"></div>
-    </div>
+  <canvas id="dvdCanvas"></canvas>
+  <script>
+    const canvas = document.getElementById('dvdCanvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
 
-    <script>
-        const dvdLogo = document.getElementById('logo');
+    // Load the PNG DVD logo image.
+    const dvdImg = new Image();
+    dvdImg.src = 'dvd.png';
+    
+    // Set initial properties after the image loads
+    dvdImg.onload = () => {
+      const logoWidth = dvdImg.width;
+      const logoHeight = dvdImg.height;
+      
+      // Start at a random position ensuring the whole image is visible.
+      let x = Math.random() * (canvas.width - logoWidth);
+      let y = Math.random() * (canvas.height - logoHeight);
+      
+      // Initial velocities (can be positive or negative).
+      let dx = 4;
+      let dy = 4;
+      
+      // Speed multiplier that increases on a precise corner hit.
+      let speedMultiplier = 1;
+      
+      // A small tolerance for floating-point comparisons.
+      const tolerance = 1; 
+
+      function update() {
+        // Clear the canvas.
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
         
-        let positionX = 50;
-        let positionY = 50;
-        let directionX = 1;
-        let directionY = 1;
-
-        function animate() {
-            // Bounce between corners
-            if (positionX <= 0 || positionX >= 200) {
-                directionX *= -1;
-            }
-            if (positionY <= 0 || positionY >= 200) {
-                directionY *= -1;
-            }
-
-            positionX += 3 * directionX;
-            positionY += 3 * directionY;
-
-            dvdLogo.style.transform = `translate(${positionX}%, ${positionY}%)`;
-
-            // Add some visual effects
-            const hue = Math.hueRotate(Date.now(), 0, 360);
-            dvdLogo.style.boxShadow = 
-                `inset 20px 20px rgba(0,0,0,0.3)`,
-                `inset -${hue}px -${hue}px rgba(${hue}, ${hue}, ${hue}, 0.3)`;
-
-            requestAnimationFrame(animate);
+        // Update position.
+        x += dx * speedMultiplier;
+        y += dy * speedMultiplier;
+        
+        // Bounce off the left/right edges.
+        if (x <= 0) {
+          x = 0;
+          dx = Math.abs(dx);
+        } else if (x + logoWidth >= canvas.width) {
+          x = canvas.width - logoWidth;
+          dx = -Math.abs(dx);
         }
-
-        // Start animation
-        animate();
-
-        // Add some random color changes
-        setInterval(() => {
-            const hue = Math.hueRotate(Date.now(), 0, 360);
-            dvdLogo.style.backgroundColor = `hsl(${hue}, 100%, 50%)`;
-        }, 2000);
-
-        // Adjust animation speed (optional)
-        let speedMultiplier = 1;
-        setInterval(() => {
-            if (speedMultiplier > 0.5 && speedMultiplier < 3) {
-                speedMultiplier += Math.random() * 0.1 - 0.05;
-            }
-        }, 200);
-    </script>
+        
+        // Bounce off the top/bottom edges.
+        if (y <= 0) {
+          y = 0;
+          dy = Math.abs(dy);
+        } else if (y + logoHeight >= canvas.height) {
+          y = canvas.height - logoHeight;
+          dy = -Math.abs(dy);
+        }
+        
+        // Check for a precise corner hit.
+        const hitLeft = Math.abs(x - 0) < tolerance;
+        const hitRight = Math.abs((x + logoWidth) - canvas.width) < tolerance;
+        const hitTop = Math.abs(y - 0) < tolerance;
+        const hitBottom = Math.abs((y + logoHeight) - canvas.height) < tolerance;
+        
+        if ((hitLeft || hitRight) && (hitTop || hitBottom)) {
+          // Increase speed multiplier on a corner hit.
+          speedMultiplier += 0.2;
+        }
+        
+        // Draw the DVD PNG.
+        ctx.drawImage(dvdImg, x, y);
+        
+        requestAnimationFrame(update);
+      }
+      
+      update();
+      
+      // Adjust canvas size on window resize.
+      window.addEventListener('resize', () => {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      });
+    };
+  </script>
 </body>
 </html>
